@@ -8,7 +8,7 @@ CFLAGS = -Wall -Wextra -g `sdl2-config --cflags`
 LDFLAGS = `sdl2-config --libs`
 
 # Source files
-SRCS = main.c render.c timer.c game.c
+SRCS = main.c render.c timer.c game.c input.c
 
 # Object files
 OBJS = $(SRCS:.c=.o)
