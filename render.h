@@ -9,10 +9,6 @@ typedef struct Game{
   SDL_Window *window;
   SDL_Renderer *renderer;
   
-  Uint64 earlyFrame;
-  Uint64 lateFrame;
-  Uint64 elapsedTime;
-  double deltaTime;
   int running;
 }GameContext;
 
