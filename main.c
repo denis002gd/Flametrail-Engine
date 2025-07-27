@@ -1,3 +1,4 @@
+#include "audio.h"
 #include "input.h"
 #include "render.h"
 #include "timer.h"
@@ -11,8 +12,13 @@
 
 int main(){
   InputState inputState = {0};
+  AudioManager audioMan = {0};
   InitInput(&inputState);
   double sec = 0;
+  Audio_Init(&audioMan);
+  Audio_LoadClip(&audioMan,"testRes/meow.mp3", "meow", false);
+  Audio_LoadClip(&audioMan, "testRes/meow2.mp3", "meow2", false);
+  Audio_LoadClip(&audioMan, "testRes/SampleMusic.mp3", "song", true);
   GameContext game_cont = {0};
   game_cont.window = SDL_CreateWindow("Test Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1000, 800, 0);
   if(InitGameContext(&game_cont)){
@@ -23,6 +29,7 @@ int main(){
   game_cont.running = 1;
   SDL_Event event;
   sec = 0;
+  float masterAudio = 1.0f;
   while(game_cont.running){
     //delta time calculation
     game_cont.lateFrame = game_cont.earlyFrame;
@@ -36,22 +43,38 @@ int main(){
       Input_ProcessEvent(&event, &inputState); 
     }
 
-       // Now use Unity-style input checking
-        if (Input_GetKeyDown(SDL_SCANCODE_SPACE, &inputState)) {
-            printf("Space key pressed!\n");
+        if (Input_GetKeyDown(SDL_SCANCODE_1, &inputState)) {
+            printf("Cat one is playing!\n");
+            Audio_PlayOneShot(&audioMan, "meow", 1.0f);
+        }
+        if (Input_GetKeyDown(SDL_SCANCODE_2, &inputState)) {
+            printf("Cat two is playing!\n");
+            Audio_PlayOneShot(&audioMan, "meow2", 1.0f);
+        }
+        if(Input_GetKeyDown(SDL_SCANCODE_R, &inputState)){
+          Audio_StopMusic();
+          printf("Music Stopped\n");
+        }
+    if(Input_GetKeyDown(SDL_SCANCODE_P, &inputState)){
+          Audio_PlayMusic(&audioMan, "song", 0.8f, true);
+          printf("Is Playing Music\n");
+        }
+  
+        if (Input_GetKeyDown(SDL_SCANCODE_A, &inputState)) {
+            masterAudio -= 0.1f;
+            printf("Volume: %.1f\n", masterAudio);
+            Audio_SetMasterVolume(&audioMan, masterAudio);
+        }
+if (Input_GetKeyDown(SDL_SCANCODE_D, &inputState)) {
+            masterAudio += 0.1f;
+            printf("Volume: %.1f\n", masterAudio);
+            Audio_SetMasterVolume(&audioMan, masterAudio);
         }
         
-        if (Input_GetKey(SDL_SCANCODE_W, &inputState)) {
-            printf("W key held down\n");
-        }
-        
-        if (Input_GetMouseButtonDown(0, &inputState)) { // Left mouse button
-            int x, y;
-            Input_GetMousePosition(&inputState, &x, &y);
-            printf("Mouse clicked at (%d, %d)\n", x, y);
-        }
+              game_cont.running = !Input_ShouldQuit(&inputState);
     SDL_Delay(16);
   }
+  Audio_Quit(&audioMan);
   FreeGameContext(&game_cont);
   return 0;
 }

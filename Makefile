@@ -5,10 +5,10 @@ CC = gcc
 CFLAGS = -Wall -Wextra -g `sdl2-config --cflags`
 
 # SDL2 Libraries
-LDFLAGS = `sdl2-config --libs`
+LDFLAGS = `sdl2-config --libs` -lSDL2_mixer
 
 # Source files
-SRCS = main.c render.c timer.c game.c input.c
+SRCS = main.c render.c timer.c game.c input.c audio.c
 
 # Object files
 OBJS = $(SRCS:.c=.o)
