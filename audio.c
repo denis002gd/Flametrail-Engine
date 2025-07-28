@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
+//Initializes an AudioManager Struct, call once
 bool Audio_Init(AudioManager *audioManager){
   if(SDL_Init(SDL_INIT_AUDIO) < 0){
     printf("SDL audio initialization failed: %s\n", Mix_GetError());
@@ -25,7 +26,7 @@ bool Audio_Init(AudioManager *audioManager){
 
   return true;
 }
-
+//Free all components of the AudioManager struct, call at quit
 void Audio_Quit(AudioManager *audioManager){
   if(!audioManager->initialized) return;
 
@@ -42,7 +43,7 @@ void Audio_Quit(AudioManager *audioManager){
   Mix_Quit();
   audioManager->initialized = false;
 }
-
+//Load a Music or Audio file 
 AudioClip *Audio_LoadClip(AudioManager* audioManager, const char* filename, const char* name, bool isMusic){
   if(!audioManager->initialized || audioManager->clipCount >= MAX_AUDIO_CLIPS){
     return NULL;
@@ -74,6 +75,7 @@ AudioClip *Audio_LoadClip(AudioManager* audioManager, const char* filename, cons
   audioManager->clipCount++;
   return clip;
 }
+//Plays a loaded audio file (Use Audio_PlayOneShot for SFX)
 int Audio_PlaySound(AudioManager *audioManager, const char* clipName, bool loop, float volume) {
     AudioClip* clip = Audio_FindClip(audioManager, clipName);
     if (!clip || clip->isMusic || !clip->chunk) {
@@ -91,6 +93,7 @@ int Audio_PlaySound(AudioManager *audioManager, const char* clipName, bool loop,
     
     return channel;
 }
+//Returns the audio clip based on the name (NULL if none found)
 AudioClip *Audio_FindClip(AudioManager* audioManager, const char* name){
   for(int i = 0; i < audioManager->clipCount; i++){
     if(strcmp(audioManager->clips[i].name, name) == 0 && audioManager->clips[i].isLoaded){
@@ -99,7 +102,7 @@ AudioClip *Audio_FindClip(AudioManager* audioManager, const char* name){
   }
   return NULL;
 }
-
+//Plays a loaded music clip
 bool Audio_PlayMusic(AudioManager *audioManager, const char* name, float volume, bool loop){
   AudioClip *clip = Audio_FindClip(audioManager, name);
   if(clip == NULL || !clip->isMusic || !clip->music){
@@ -115,7 +118,7 @@ bool Audio_PlayMusic(AudioManager *audioManager, const char* name, float volume,
   }
    return true;
 }
-
+//Plays a sound effect by name
 void Audio_PlayOneShot(AudioManager *audioManager, const char* name, float volume){
   Audio_PlaySound(audioManager, name, false, volume);
 }
@@ -128,9 +131,11 @@ void Audio_PauseMusic(){
 void Audio_ResumeMusic(){
   Mix_ResumeMusic();
 }
+//returns true if music is playing currently
 bool Audio_IsPlayingMusic(){
   return Mix_PlayingMusic();
 }
+//Set master (world) volume 0.0f = no sound 1.0f = full volume
 void Audio_SetMasterVolume(AudioManager *audioManager, float newVolume){
    audioManager->masterVolume = newVolume;
   if(newVolume < 0.0f) audioManager->masterVolume = 0.0f;

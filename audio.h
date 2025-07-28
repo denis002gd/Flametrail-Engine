@@ -6,6 +6,7 @@
 
 #define MAX_AUDIO_CLIPS 32
 #define MAX_FILENAM_LENGHT 128
+#define MAX_AUDIOSOURCES 64
 
 typedef struct{
   char name[MAX_FILENAM_LENGHT];
@@ -19,7 +20,7 @@ typedef struct{
 typedef struct {
   int channel;
   AudioClip* clip;
-  bool isPlaying;
+  bool playOnStart;
   bool loop;
   float volume;
   float pitch;
@@ -27,6 +28,7 @@ typedef struct {
 
 typedef struct{
   AudioClip clips[MAX_AUDIO_CLIPS];
+  AudioSource sources[MAX_AUDIOSOURCES];
   int clipCount;
   bool initialized;
   float masterVolume;
@@ -34,6 +36,7 @@ typedef struct{
 
 bool Audio_Init(AudioManager *audioManager);
 void Audio_Quit(AudioManager *audioManager);
+AudioSource *Audio_CreateAudioSource(float volume, bool loop, bool playOnStart);
 AudioClip *Audio_LoadClip(AudioManager* audioManager,const char* filename, const char* name, bool isMusic);
 AudioClip *Audio_FindClip(AudioManager* audioManager, const char* name);
 bool Audio_PlayMusic(AudioManager *audioManager, const char* name, float volume, bool loop);
