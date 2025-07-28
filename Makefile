@@ -8,7 +8,7 @@ CFLAGS = -Wall -Wextra -g `sdl2-config --cflags`
 LDFLAGS = `sdl2-config --libs` -lSDL2_mixer
 
 # Source files
-SRCS = main.c render.c timer.c game.c input.c audio.c
+SRCS = main.c render.c timer.c game.c input.c audio.c maths.c -lm
 
 # Object files
 OBJS = $(SRCS:.c=.o)

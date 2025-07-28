@@ -3,6 +3,7 @@
 #include "render.h"
 #include "timer.h"
 #include "game.h"
+#include "maths.h"
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_timer.h>
@@ -43,16 +44,9 @@ int main(){
       Input_ProcessEvent(&event, &inputState); 
     }
 
-     if(Timer_Update(&newTimer, time.deltaTime)){
-       Audio_PlayOneShot(&audioMan, "meow2", 1.0f);
-       printf("Global Time: %.3f\n", time.time);
-       Timer_ResetTimer(&newTimer);
-    }
-    if(Input_GetKeyDown(SDL_SCANCODE_R, &inputState)){
-      Audio_ResumeMusic();
-    }
+ 
     if(Input_GetKeyDown(SDL_SCANCODE_P, &inputState)){
-      Audio_PauseMusic();
+      printf("Rasp: %.3f\n",Vec2_Dot((Vector2){-20.0f, -30.0f}, (Vector2){-5.0f, -2.0f}));
     }
 
 
