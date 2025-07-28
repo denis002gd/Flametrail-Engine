@@ -43,6 +43,16 @@ void Audio_Quit(AudioManager *audioManager){
   Mix_Quit();
   audioManager->initialized = false;
 }
+
+AudioSource *Audio_CreateAudioSource(float volume, bool loop, bool playOnStart){
+  AudioSource *audioSrc = malloc(sizeof(AudioSource));
+  audioSrc->playOnStart = playOnStart;
+  audioSrc->loop = loop;
+  if(volume > 1.0f) volume = 1.0f;
+  if(volume < 0.0f) volume = 0.0f;
+  audioSrc->volume = volume;
+  return audioSrc;
+}
 //Load a Music or Audio file 
 AudioClip *Audio_LoadClip(AudioManager* audioManager, const char* filename, const char* name, bool isMusic){
   if(!audioManager->initialized || audioManager->clipCount >= MAX_AUDIO_CLIPS){

@@ -14,7 +14,6 @@ int main(){
   InputState inputState = {0};
   AudioManager audioMan = {0};
   InitInput(&inputState);
-  double sec = 0;
   Audio_Init(&audioMan);
   Audio_LoadClip(&audioMan,"testRes/meow.mp3", "meow", false);
   Audio_LoadClip(&audioMan, "testRes/meow2.mp3", "meow2", false);
@@ -31,8 +30,6 @@ int main(){
   time.lateFrame = 0;
   game_cont.running = 1;
   SDL_Event event;
-  sec = 0;
-  float masterAudio = 1.0f;
   Audio_PlayMusic(&audioMan, "song", 1.0f, true);
   while(game_cont.running){
     //delta time calculation
@@ -45,15 +42,16 @@ int main(){
     while(SDL_PollEvent(&event)){
       Input_ProcessEvent(&event, &inputState); 
     }
+
      if(Timer_Update(&newTimer, time.deltaTime)){
-    Audio_PlayOneShot(&audioMan, "meow2", 1.0f);
-      printf("Global Time: %.3f\n", time.time);
-      Timer_ResetTimer(&newTimer);
+       Audio_PlayOneShot(&audioMan, "meow2", 1.0f);
+       printf("Global Time: %.3f\n", time.time);
+       Timer_ResetTimer(&newTimer);
     }
     if(Input_GetKeyDown(SDL_SCANCODE_R, &inputState)){
       Audio_ResumeMusic();
     }
- if(Input_GetKeyDown(SDL_SCANCODE_P, &inputState)){
+    if(Input_GetKeyDown(SDL_SCANCODE_P, &inputState)){
       Audio_PauseMusic();
     }
 
