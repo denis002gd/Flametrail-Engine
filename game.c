@@ -129,6 +129,8 @@ void GameObj_SetParent(GameObject *parentObj, GameObject *childObj){
   if(parentObj && parentObj->childCount < MAX_CHILDRENS){
     parentObj->children[parentObj->childCount] = childObj;
     parentObj->childCount++;
+  }else{
+    printf("Parent can not accept any more children\n");
   }
 }
 //updates the game objext every frame unless not active
@@ -170,5 +172,94 @@ void GameObj_Destroy(GameObject *gameObj){
   }
   free(gameObj);
   gameObj = NULL;
+}
+
+Scene *Scene_CreateScene(SceneManager *sceneMan, const char* name){
+  if(sceneMan->numberOfScenes >= MAX_SCENES){
+    printf("You have too many scenes\n");
+    return NULL;
+  }
+  
+  Scene *newScene = malloc(sizeof(Scene)); 
+  if(!newScene) return NULL;
+  
+  memset(newScene, 0, sizeof(Scene));
+  strncpy(newScene->name, name, MAX_CHARACTERS_NAME - 1);
+  newScene->name[MAX_CHARACTERS_NAME - 1] = '\0';
+  
+  sceneMan->scenes[sceneMan->numberOfScenes] = newScene; 
+  sceneMan->numberOfScenes++;
+  newScene->isActive = false;
+  return newScene;
+}
+bool SceneManager_LoadScene(SceneManager *sceneMan, const char *name){
+  Scene *newScene = NULL;
+  for(int i = 0; i < sceneMan->numberOfScenes; i++){
+    if(strcmp(name, sceneMan->scenes[i]->name) == 0){
+      newScene = sceneMan->scenes[i];
+      break;
+    }
+  }
+  if(!newScene){
+    printf("Scene with name \"%s\" not found\n", name);
+    return false;
+  }
+  //unload current scene
+  if(sceneMan->activeScene && sceneMan->activeScene->isActive){
+    if(sceneMan->activeScene->OnSceneUnload){
+      sceneMan->activeScene->OnSceneUnload(sceneMan->activeScene);
+    }
+
+    for(int i = 0; i < sceneMan->activeScene->gameObjectsCount; i++){
+      GameObj_Destroy(sceneMan->activeScene->objects[i]);
+    }
+    sceneMan->activeScene->gameObjectsCount = 0;
+    sceneMan->activeScene->isActive = false;
+  }
+
+  //load new scene
+  sceneMan->activeScene = newScene;
+  newScene->isActive = true;
+
+  if(newScene->OnSceneLoad){
+    newScene->OnSceneLoad(newScene);
+  }
+  printf("Scene: %s is loaded\n", name);
+  return newScene;
+}
+
+bool Scene_AddGameObject(SceneManager *sceneMan, GameObject *gameObj){
+  Scene *scene = sceneMan->activeScene;
+  if(!scene || !gameObj || scene->gameObjectsCount >= MAX_GAMEOBJECTS){
+    printf("Cannot add any more objects\n");
+    return false;
+  }
+  sceneMan->activeScene->objects[sceneMan->activeScene->gameObjectsCount] = gameObj;
+  gameObj->scene = scene;
+  sceneMan->activeScene->gameObjectsCount++;
+  return true;
+}  
+void SceneManager_Update(SceneManager *sceneMan, float deltaTime){
+  Scene *scene = sceneMan->activeScene;
+  if(!scene || !scene->isActive){
+    printf("Scene not existent of active\n");
+    return;
+  }
+  for(int i = 0 ; i < scene->gameObjectsCount; i++){
+    GameObj_Update(scene->objects[i], deltaTime);
+  }
+}
+GameObject *GameObj_Find(SceneManager *sceneMan, const char *name){
+  Scene *scene = sceneMan->activeScene;
+  if(!scene || !scene->isActive){
+    return NULL;
+  }
+  for(int i = 0 ; i < scene->gameObjectsCount; i++){
+    if(strcmp(scene->objects[i]->name, name) == 0){
+      return scene->objects[i];
+    }
+  }
+    printf("GameObject \"%s\" not existent\n", name);
+  return NULL;
 }
 

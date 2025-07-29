@@ -119,4 +119,10 @@ void GameObj_SetParent(GameObject *parentObj, GameObject *childObj);
 void GameObj_Update(GameObject *gameObj, double deltaTime);
 void GameObj_Start(GameObject *gameObj);
 void GameObj_Destroy(GameObject *gameObj);
+
+Scene *Scene_CreateScene(SceneManager *sceneMan,const char* name);
+bool SceneManager_LoadScene(SceneManager *sceneMan, const char *name);
+bool Scene_AddGameObject(SceneManager *sceneMan, GameObject *gameObj);
+void SceneManager_Update(SceneManager *sceneMan, float deltaTime);
+GameObject *GameObj_Find(SceneManager *sceneMan, const char *name);
 #endif // !GAME_H
