@@ -70,6 +70,7 @@ typedef struct Component{
 
     struct{
       void *scriptData;
+      void(*CostumeStart)(void *scriptData);
       void(*CostumeUpdate)(void *scriptData, float deltaTime);
     }script;
 
@@ -120,6 +121,8 @@ void GameObj_Update(GameObject *gameObj, double deltaTime);
 void GameObj_Start(GameObject *gameObj);
 void GameObj_Destroy(GameObject *gameObj);
 
+void ScriptComponent_Start(Component *comp);
+void ScriptComponent_Update(Component *comp, double deltaTime);
 Scene *Scene_CreateScene(SceneManager *sceneMan,const char* name);
 bool SceneManager_LoadScene(SceneManager *sceneMan, const char *name);
 bool Scene_AddGameObject(SceneManager *sceneMan, GameObject *gameObj);

@@ -33,9 +33,26 @@ Component *Component_Create(ComponentType type){
       comp->data.audio_source.loop = false;
       comp->data.audio_source.playOnAwake = true;
     break;
+    case COMPONENT_SCRIPT:
+    comp->Start = ScriptComponent_Start;
+    comp->Update = ScriptComponent_Update;
+    break;
   }
   return comp;
 }
+void ScriptComponent_Start(Component *comp){
+ if(!comp || comp->type != COMPONENT_SCRIPT) return;
+  if(comp->data.script.CostumeStart){
+    comp->data.script.CostumeStart(comp->data.script.scriptData);
+  }
+}
+void ScriptComponent_Update(Component *comp, double deltaTime){
+    if(!comp || comp->type != COMPONENT_SCRIPT) return;
+
+    if(comp->data.script.CostumeUpdate){
+      comp->data.script.CostumeUpdate(comp->data.script.scriptData, deltaTime);
+    }
+  }
 //Destroys a component
 void Component_Destroy(Component *component){
   if(!component) return;
@@ -224,7 +241,12 @@ bool SceneManager_LoadScene(SceneManager *sceneMan, const char *name){
   if(newScene->OnSceneLoad){
     newScene->OnSceneLoad(newScene);
   }
-  printf("Scene: %s is loaded\n", name);
+  //Calling start for initializing all objects
+  for(int i = 0; i < newScene->gameObjectsCount; i++){
+    GameObj_Start(newScene->objects[i]);
+    printf("Object \"%s\" was loaded in the scene\n", newScene->objects[i]->name);
+  }
+  printf("Scene: %s is loaded\n\n", name);
   return newScene;
 }
 

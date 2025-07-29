@@ -17,24 +17,32 @@ SceneManager sceneMan = {0};
 void PlayScriptTest(void *scriptData, float deltaTime){
   printf("Player script has been called, everthing works fine :)\n");
 }
+void ScriptInitTest(void *scriptData){
+  printf("Costume script on this object was called successfully in start\n");
+}
 void SetupGameScene(Scene *scene){
   printf("Setting up game scene\n");
   GameObject* player = GameObj_Create("Player");
   GameObj_AddComponent(player, COMPONENT_RENDERER);
   GameObj_AddComponent(player, COMPONENT_RIGIDBODY);
 
+  GameObject* enemy1 = GameObj_Create("Enemy 1");
+  GameObj_AddComponent(enemy1, COMPONENT_RENDERER);
+  GameObj_AddComponent(enemy1, COMPONENT_RIGIDBODY);
+  Scene_AddGameObject(&sceneMan, enemy1);
+
+  GameObject* boss = GameObj_Create("Boss");
+  GameObj_AddComponent(boss, COMPONENT_RENDERER);
+  GameObj_AddComponent(boss, COMPONENT_RIGIDBODY);
+  Scene_AddGameObject(&sceneMan, boss);
+
   //adding a costume script Component
   Component *script = GameObj_AddComponent(player, COMPONENT_SCRIPT);
-  script->data.script.CostumeUpdate = PlayScriptTest;
- 
+  script->data.script.CostumeStart = ScriptInitTest;
   player->transform->data.transform.x = 100.0f;
   player->transform->data.transform.y = 100.0f;
   Scene_AddGameObject(&sceneMan, player);
 
-  for(int i = 0; i < scene->gameObjectsCount; i++){
-    GameObj_Start(scene->objects[i]);
-    printf("GameObj_Start: %s\n", scene->objects[i]->name);
-  }
 }
 
 int main(){
@@ -85,9 +93,9 @@ int main(){
       SceneManager_LoadScene(&sceneMan, "GameLevel1");
     }
     if(Input_GetKeyDown(SDL_SCANCODE_3, &inputState)){
-      SceneManager_LoadScene(&sceneMan, "GameLevel3");
+
     }
-    SceneManager_Update(&sceneMan, time.deltaTime);\
+    SceneManager_Update(&sceneMan, time.deltaTime);
 
    if(Input_GetKeyDown(SDL_SCANCODE_SPACE, &inputState)){
     GameObject *player = GameObj_Find(&sceneMan, "Player");
