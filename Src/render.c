@@ -1,4 +1,4 @@
-#include "render.h"
+#include "../HeaderFiles/render.h"
 #include <SDL2/SDL_error.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
@@ -17,7 +17,6 @@ int InitGameContext(GameContext *Game_Context){
     fprintf(stderr, "Failed at initializing renderer, Error: %s\n", SDL_GetError());
     return 1;
   }
-  Game_Context->deltaTime = 0;
   return 0;
 }
 

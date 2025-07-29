@@ -1,9 +1,9 @@
-#include "audio.h"
-#include "input.h"
-#include "render.h"
-#include "timer.h"
-#include "game.h"
-#include "maths.h"
+#include "../HeaderFiles/audio.h"
+#include "../HeaderFiles/input.h"
+#include "../HeaderFiles/render.h"
+#include "../HeaderFiles/timer.h"
+#include "../HeaderFiles/game.h"
+#include "../HeaderFiles/maths.h"
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_scancode.h>
@@ -50,9 +50,9 @@ int main(){
   AudioManager audioMan = {0};
   InitInput(&inputState);
   Audio_Init(&audioMan);
-  Audio_LoadClip(&audioMan,"testRes/meow.mp3", "meow", false);
-  Audio_LoadClip(&audioMan, "testRes/meow2.mp3", "meow2", false);
-  Audio_LoadClip(&audioMan, "testRes/SampleMusic.mp3", "song", true);
+  Audio_LoadClip(&audioMan,"../NonEssentials/testRes/meow.mp3", "meow", false);
+  Audio_LoadClip(&audioMan, "../NonEssentials/testRes/meow2.mp3", "meow2", false);
+  Audio_LoadClip(&audioMan, "../NonEssentials/testRes/SampleMusic.mp3", "song", true);
   GameContext game_cont = {0};
   TimeInfo time = {0};
   game_cont.window = SDL_CreateWindow("Test Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1000, 800, 0);

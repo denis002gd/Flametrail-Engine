@@ -1,4 +1,4 @@
-#include "timer.h"
+#include "../HeaderFiles/timer.h"
 #include <SDL2/SDL_timer.h>
 void Time_CalculateDeltaTime(TimeInfo *time){
  time->deltaTime = (double)((time->earlyFrame - time->lateFrame) * 1000)/SDL_GetPerformanceFrequency(); 

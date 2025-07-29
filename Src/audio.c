@@ -1,4 +1,4 @@
-#include "audio.h"
+#include "../HeaderFiles/audio.h"
 #include <SDL2/SDL_mixer.h>
 #include <stdio.h>
 #include <string.h>

@@ -1,5 +1,5 @@
-#include "game.h"
-#include "audio.h"
+#include "../HeaderFiles/game.h"
+#include "../HeaderFiles/audio.h"
 #include <stdio.h>
 #include <string.h>
 /*A component is a logic block that can be assigned to a game object (everything in the world is a game object),
@@ -33,10 +33,14 @@ Component *Component_Create(ComponentType type){
       comp->data.audio_source.loop = false;
       comp->data.audio_source.playOnAwake = true;
     break;
+    case COMPONENT_COLLIDER:
+      //nothing for now
+    break;
     case COMPONENT_SCRIPT:
     comp->Start = ScriptComponent_Start;
     comp->Update = ScriptComponent_Update;
     break;
+
   }
   return comp;
 }
