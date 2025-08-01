@@ -3,6 +3,7 @@
 #include "../HeaderFiles/render.h"
 #include "../HeaderFiles/timer.h"
 #include "../HeaderFiles/game.h"
+#include "../HeaderFiles/collision.h"
 #include "../HeaderFiles/maths.h"
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keycode.h>
@@ -88,9 +89,16 @@ int main(){
 
     if(Input_GetKeyDown(SDL_SCANCODE_1, &inputState)){
       SceneManager_LoadScene(&sceneMan, "MenuScene");
+      float matrix[3][3] = {
+        {4,-2, 6},
+        {2, 5, 0},
+        {-2,1,-4},
+      };
+      printf("Rasp: %.1f\n", Det_3D(matrix));
     }
     if(Input_GetKeyDown(SDL_SCANCODE_2, &inputState)){
       SceneManager_LoadScene(&sceneMan, "GameLevel1");
+      Audio_PlayOneShot(&audioMan, "meow", 1.0f);
     }
     if(Input_GetKeyDown(SDL_SCANCODE_3, &inputState)){
 

@@ -18,6 +18,11 @@ Vector2 Vec2_Scale(Vector2 A, float scale);
 Vector2 Vec2_Clamp(Vector2 target, Vector2 min, Vector2 max);
 float Vec2_Dot(Vector2 A, Vector2 B);
 
+
+
+float Det_3D(float m[3][3]);
+float Det_2D(float m[2][2]);
+
 float EaseInOutBack(float x);
 #endif // !M:w
 // ATHS_H

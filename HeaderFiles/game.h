@@ -9,7 +9,7 @@
 
 #define MAX_AUDIOSOURCE_NAME 32
 #define MAX_CHARACTERS_NAME 32
-#define MAX_COMPONENTS 6
+#define MAX_COMPONENTS 15
 #define MAX_GAMEOBJECTS 1000
 #define MAX_CHILDRENS 100
 #define MAX_SCENES 10
@@ -20,10 +20,12 @@ typedef struct Scene Scene;
 
 typedef enum{
   COMPONENT_TRANSFORM,
+  COMPONENT_CAMERA,
   COMPONENT_RENDERER,
   COMPONENT_RIGIDBODY,
   COMPONENT_COLLIDER,
   COMPONENT_AUDIO_SOURCE,
+  COMPONENT_UI_ELEMENT,
   COMPONENT_SCRIPT,
 }ComponentType;
 
@@ -43,6 +45,12 @@ typedef struct Component{
       float rotation;
       float scaleX, scaleY;
     }transform;
+    
+    struct{
+      bool isEnabled;
+      float fieldOfView;
+       
+    }camera;
 
     struct{
       SDL_Color color;
@@ -62,6 +70,10 @@ typedef struct Component{
     }collider;
 
     struct{
+     //Add ui elements
+    }ui_element;
+
+    struct{
       char clipName[MAX_AUDIOSOURCE_NAME];
       AudioSource *audioSource;
       bool loop;
@@ -79,6 +91,8 @@ typedef struct Component{
 
 typedef struct GameObject{
   char name[MAX_CHARACTERS_NAME];
+  char tag[MAX_CHARACTERS_NAME];
+  int layer;
   bool isActive;
   Component* components[MAX_COMPONENTS];
   int numComponents;
