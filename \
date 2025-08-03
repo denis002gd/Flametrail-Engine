@@ -1,5 +1,4 @@
 #include "../HeaderFiles/maths.h"
-#include <stdio.h>
 
 Vector2 Vec2_Sub(Vector2 A, Vector2 B){
   
@@ -84,10 +83,10 @@ float Det_2D(float m[2][2]){
 void Matrix_Rotate(float m[2][2], float angle){
   float cosA = cosf(angle);
   float sinA = sinf(angle);
-  m[0][0] = cosA;
-  m[0][1] = -sinA;
-  m[1][0] = sinA;
-  m[1][1] = cosA;
+  m[0][0] *= cosA;
+  m[0][1] *= -sinA;
+  m[1][0] *= sinA;
+  m[1][1] *= cosA;
 }
 Vector2 Vec2_MatrixRotation(float rotationMatrix[2][2], Vector2 vector){
   return (Vector2){
@@ -96,27 +95,5 @@ Vector2 Vec2_MatrixRotation(float rotationMatrix[2][2], Vector2 vector){
   }; 
 }
 float Math_Orient2D(Vector2 A, Vector2 B, Vector2 C){
-  return (B.x - A.x)*(C.y - A.y) - (B.y - A.y)*(C.x - A.x);
+
 }
-float Math_InCircle2D(Vector2 A, Vector2 B, Vector2 C, Vector2 D){
-  //for optimization D will be at the origin
-  float adx = A.x - D.x;
-  float ady = A.y - D.y;
-  float bdx = B.x - D.x;
-  float bdy = B.y - D.y;
-  float cdx = C.x - D.x;
-  float cdy = C.y - D.y;
-  float matrix[3][3] = {
-  {adx, ady, adx*adx + ady*ady},
-  {bdx, bdy, bdx*bdx + bdy*bdy},
-  {cdx, cdy, cdx*cdx + cdy*cdy},
-  };
-  return Det_3D(matrix);
-}
-bool Math_InCircle2DCheck(float resultedValue){
-  if(resultedValue > 0){
-    printf("Point is inside circle\n");
-    return true;
-  }
-  return false;
-} 

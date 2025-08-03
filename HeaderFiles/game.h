@@ -66,7 +66,7 @@ typedef struct Component{
 
     struct{
       
-      //TODO: add collision options from physics.c
+      //TODO: add collision options from math.c
     }collider;
 
     struct{

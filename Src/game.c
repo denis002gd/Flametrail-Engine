@@ -251,7 +251,7 @@ bool SceneManager_LoadScene(SceneManager *sceneMan, const char *name){
     printf("Object \"%s\" was loaded in the scene\n", newScene->objects[i]->name);
   }
   printf("Scene: %s is loaded\n\n", name);
-  return newScene;
+  return true;
 }
 
 bool Scene_AddGameObject(SceneManager *sceneMan, GameObject *gameObj){

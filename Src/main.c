@@ -88,20 +88,18 @@ int main(){
 //////////////////////////Add code here/////////////////////////////////
 
     if(Input_GetKeyDown(SDL_SCANCODE_1, &inputState)){
-      SceneManager_LoadScene(&sceneMan, "MenuScene");
-      float matrix[3][3] = {
-        {4,-2, 6},
-        {2, 5, 0},
-        {-2,1,-4},
-      };
-      printf("Rasp: %.1f\n", Det_3D(matrix));
+  
     }
     if(Input_GetKeyDown(SDL_SCANCODE_2, &inputState)){
       SceneManager_LoadScene(&sceneMan, "GameLevel1");
       Audio_PlayOneShot(&audioMan, "meow", 1.0f);
     }
     if(Input_GetKeyDown(SDL_SCANCODE_3, &inputState)){
-
+      Vector2 A = {-2, 3};
+      Vector2 B = {2, -1};
+      Vector2 C = {-1, -3};
+        printf("A->B->C : %.2f\n",Math_Orient2D(A, B, C));
+        printf("A->C->B : %.2f\n",Math_Orient2D(A, C, B));
     }
     SceneManager_Update(&sceneMan, time.deltaTime);
 
