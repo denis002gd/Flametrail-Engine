@@ -1,10 +1,13 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <SDL2/SDL_rect.h>
+#include <SDL2/SDL_render.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 #include "audio.h"
+#include "SDL2/SDL_image.h"
 #include "render.h"
 
 #define MAX_AUDIOSOURCE_NAME 32
@@ -53,9 +56,7 @@ typedef struct Component{
     }camera;
 
     struct{
-      SDL_Color color;
-      bool visible;
-      int layer;
+     Texture texture; 
     }renderer;
 
     struct{
@@ -117,7 +118,7 @@ typedef struct Scene{
   void(*OnSceneUnload)(Scene *self);
 }Scene;
 
-typedef struct{
+typedef struct SceneManager{
   Scene *scenes[MAX_SCENES];
   int numberOfScenes;
   Scene *activeScene;

@@ -18,10 +18,7 @@ Component *Component_Create(ComponentType type){
      comp->data.transform.scaleX = 1.0f;
      comp->data.transform.scaleY = 1.0f;
     break;
-    case COMPONENT_RENDERER:
-      comp->data.renderer.color = (SDL_Color){255,255,255,255};
-      comp->data.renderer.visible = true;
-      comp->data.renderer.layer = 0;
+    case COMPONENT_RENDERER: 
     break;
     case COMPONENT_RIGIDBODY:
       comp->data.rigidbody.mass = 1.0f;
