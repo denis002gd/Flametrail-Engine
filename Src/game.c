@@ -1,5 +1,6 @@
 #include "../HeaderFiles/game.h"
 #include "../HeaderFiles/audio.h"
+#include <SDL2/SDL_render.h>
 #include <stdio.h>
 #include <string.h>
 /*A component is a logic block that can be assigned to a game object (everything in the world is a game object),
@@ -19,6 +20,26 @@ Component *Component_Create(ComponentType type){
      comp->data.transform.scaleY = 1.0f;
     break;
     case COMPONENT_RENDERER: 
+      comp->data.renderer.texture.texture = NULL;
+      comp->data.renderer.texture.textureRect = malloc(sizeof(SDL_Rect));
+      comp->data.renderer.texture.center = malloc(sizeof(SDL_Point));
+      
+      if(comp->data.renderer.texture.textureRect) {
+        comp->data.renderer.texture.textureRect->x = 0;
+        comp->data.renderer.texture.textureRect->y = 0;
+        comp->data.renderer.texture.textureRect->w = 100;
+        comp->data.renderer.texture.textureRect->h = 100;
+      }
+      
+      if(comp->data.renderer.texture.center) {
+        comp->data.renderer.texture.center->x = 50;
+        comp->data.renderer.texture.center->y = 50;
+      }
+      
+      comp->data.renderer.texture.active = 1;
+      comp->data.renderer.texture.angle = 0.0f;
+      comp->data.renderer.texture.flip = SDL_FLIP_NONE;
+      comp->data.renderer.texture.layer = 1;
     break;
     case COMPONENT_RIGIDBODY:
       comp->data.rigidbody.mass = 1.0f;
@@ -54,14 +75,25 @@ void ScriptComponent_Update(Component *comp, double deltaTime){
       comp->data.script.CostumeUpdate(comp->data.script.scriptData, deltaTime);
     }
   }
-//Destroys a component
 void Component_Destroy(Component *component){
   if(!component) return;
+
+  // free renderer specific memory
+  if(component->type == COMPONENT_RENDERER) {
+    if(component->data.renderer.texture.texture) {
+      SDL_DestroyTexture(component->data.renderer.texture.texture);
+    }
+    if(component->data.renderer.texture.textureRect) {
+      free(component->data.renderer.texture.textureRect);
+    }
+    if(component->data.renderer.texture.center) {
+      free(component->data.renderer.texture.center);
+    }
+  }
 
   if(component->OnDestroy){
     component->OnDestroy(component);
   }
-  //TODO: If the component is a script data, i need to free that too
   free(component);
 }
 //Creates a game object with a given name (other values are not assigned except transform and number of components)
@@ -81,7 +113,7 @@ GameObject *GameObj_Create(const char *name){
 }
 //Returns a component from a game object
 Component *GameObj_GetComponent(GameObject *gameObj, ComponentType type){
-   if(!gameObj || !type) return NULL;
+   if(!gameObj) return NULL;
 
   for(int i = 0; i < gameObj->numComponents; i++){
      if(gameObj->components[i]->type == type){
@@ -98,6 +130,7 @@ Component *GameObj_AddComponent(GameObject *gameObj, ComponentType type){
       printf("Object \"%s\" already has this component\n", gameObj->name);
       //TODO: Allow more of the same components to the same game object
       //this is allowed for now but might add the ability to add more of the same component
+      return gameObj->components[i];
     }
   }
   Component *comp = Component_Create(type);
@@ -284,5 +317,12 @@ GameObject *GameObj_Find(SceneManager *sceneMan, const char *name){
   }
     printf("GameObject \"%s\" not existent\n", name);
   return NULL;
+}
+void SceneManager_UnloadAll(SceneManager *sceneMan){
+  for(int i = 0; i < sceneMan->numberOfScenes; i++){
+    for(int j = 0; j < sceneMan->scenes[i]->gameObjectsCount; j++){
+      GameObj_Destroy(sceneMan->scenes[i]->objects[j]);
+    }
+  }
 }
 

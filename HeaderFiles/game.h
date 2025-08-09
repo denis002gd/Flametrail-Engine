@@ -136,6 +136,8 @@ void GameObj_Update(GameObject *gameObj, double deltaTime);
 void GameObj_Start(GameObject *gameObj);
 void GameObj_Destroy(GameObject *gameObj);
 
+
+void SceneManager_UnloadAll(SceneManager *sceneMan);
 void ScriptComponent_Start(Component *comp);
 void ScriptComponent_Update(Component *comp, double deltaTime);
 Scene *Scene_CreateScene(SceneManager *sceneMan,const char* name);

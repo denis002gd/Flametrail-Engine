@@ -63,7 +63,7 @@ typedef struct{
   SDL_Event inputEvent;
 
   GameContext gameContext;
-  SceneManager sceneManager;
+  SceneManager *sceneManager;
   AudioManager audioManager;
   InputState inputManager;
   TimeInfo timeInfo;

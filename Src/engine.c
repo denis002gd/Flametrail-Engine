@@ -23,6 +23,9 @@ void FreeGameContext(GameContext *Game_Context){
 }
 void Engine_Shutdown(EngineCore *engineCore){
    FreeGameContext(&engineCore->gameContext);
+   if(engineCore->sceneManager->numberOfScenes != 0){
+    SceneManager_UnloadAll(engineCore->sceneManager);
+  } 
    if(engineCore->engineState.img_initialized){
     IMG_Quit();
    }
