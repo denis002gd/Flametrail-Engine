@@ -4,6 +4,9 @@
 #include "../HeaderFiles/game.h"
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
+#include <SDL2/SDL_surface.h>
+#include <SDL2/SDL_ttf.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -100,12 +103,10 @@ static int CompareRenderLayers(const void *a, const void *b) {
 void RenderScene(SDL_Renderer *renderer, SceneManager *sceneManager){
     if(!renderer || !sceneManager) return;
     
-    SDL_RenderClear(renderer);
     
     Scene *currentScene = sceneManager->activeScene;
     if(!currentScene || !currentScene->isActive) {
-        SDL_RenderPresent(renderer);
-        return;
+        return; 
     }
     
     GameObject *renderableObjects[MAX_GAMEOBJECTS];
@@ -142,5 +143,136 @@ void RenderScene(SDL_Renderer *renderer, SceneManager *sceneManager){
         }
     }
     
-    SDL_RenderPresent(renderer);
+}
+bool TextRender_Initialize(TextRender *textRenderer, SDL_Renderer *renderer){
+    if(!textRenderer || !renderer) return false;
+
+    if(TTF_Init() == -1){
+        printf("Failed to initialize TTF\n");
+        return false;
+    }
+    memset(textRenderer, 0, sizeof(TextRender));
+    textRenderer->renderer = renderer;
+    textRenderer->isInitialized = true;
+    textRenderer->fontCount = 0;
+    return true;
+}
+FontData *TextRenderer_LoadFont(TextRender *textRenderer, const char *fontPath, int fontSize){
+    if(!textRenderer || !fontPath || fontSize <= 0){
+        return NULL;
+    }
+    if(textRenderer->fontCount >= 10){
+        printf("Max number of fonts reached\n");
+        return NULL;
+    }
+    FontData *fontData = malloc(sizeof(FontData));
+    if(!fontData) return NULL;
+    fontData->font = TTF_OpenFont(fontPath, fontSize);
+    if(!fontData->font){
+        printf("Failed to load font, %s\n", TTF_GetError());
+        return NULL;
+    }
+    fontData->fontSize = fontSize;
+    fontData->color = (SDL_Color){255,255,255,255};
+    strncpy(fontData->path, fontPath, sizeof(fontData->path) - 1);
+    fontData->path[sizeof(fontData->path) - 1] = '\0';
+
+    textRenderer->fonts[textRenderer->fontCount] = fontData;
+    textRenderer->fontCount++;
+    return fontData;
+}
+SDL_Texture *TextRender_CreateTextTexture(TextRender *textRender, FontData *fontData, const char *format, ...){
+    if(!textRender || !fontData) return NULL;
+     char buffer[MAX_TEXT_CHARACTERS];
+    va_list args;
+
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+
+    SDL_Surface *textSurface = TTF_RenderText_Solid(fontData->font, buffer, fontData->color);
+    if(!textSurface){
+        printf("Failed to make the text surface\n");
+        return NULL;
+    }
+    SDL_Texture *textTexture = SDL_CreateTextureFromSurface(textRender->renderer, textSurface);
+    if(!textTexture){
+        printf("Failed to make the text texture\n");
+        return NULL;
+    }
+    SDL_FreeSurface(textSurface);
+    return textTexture;
+}
+void TextRender_RenderText(TextRender *textRenderer, FontData *font, SDL_Rect *destRect ,const char *format, ...){
+     if (!textRenderer || !font || !destRect || !format) return;
+    
+    char buffer[MAX_TEXT_CHARACTERS];
+    va_list args;
+    
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+    
+    SDL_Texture *textTexture = TextRender_CreateTextTexture(textRenderer, font, "%s", buffer);
+    if (!textTexture) return;
+    
+    if (destRect->w == 0 || destRect->h == 0) {
+        SDL_QueryTexture(textTexture, NULL, NULL, &destRect->w, &destRect->h);
+    }
+    
+    SDL_RenderCopy(textRenderer->renderer, textTexture, NULL, destRect);
+    
+    SDL_DestroyTexture(textTexture);
+}
+void TextRender_RenderTextColored(TextRender *textRenderer, FontData *font, SDL_Rect *destRect, SDL_Color color, const char *format, ...){
+    if (!textRenderer || !font || !destRect || !format) return;
+    
+    char buffer[MAX_TEXT_CHARACTERS];
+    va_list args;
+    
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+    
+    SDL_Color originalColor = font->color;
+    font->color = color;
+    
+    TextRender_RenderText(textRenderer, font, destRect, "%s", buffer);
+    
+    font->color = originalColor;
+}
+void TextRenderer_GetTextSize(FontData *font, int *width, int *height, const char *format, ...) {
+    if (!font || !format) return;
+    
+    char buffer[MAX_TEXT_CHARACTERS];
+    va_list args;
+    
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+    
+    TTF_SizeText(font->font, buffer, width, height);
+}
+
+void TextRenderer_DestroyFont(FontData *font) {
+    if (!font) return;
+    
+    if (font->font) {
+        TTF_CloseFont(font->font);
+    }
+    free(font);
+}
+
+void TextRenderer_Cleanup(TextRender *textRenderer) {
+    if (!textRenderer) return;
+    
+    for (int i = 0; i < textRenderer->fontCount; i++) {
+        TextRenderer_DestroyFont(textRenderer->fonts[i]);
+    }
+    
+    if (textRenderer->isInitialized) {
+        TTF_Quit();
+    }
+    
+    memset(textRenderer, 0, sizeof(TextRender));
 }

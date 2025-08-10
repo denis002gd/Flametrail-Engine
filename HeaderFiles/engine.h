@@ -67,6 +67,7 @@ typedef struct{
   AudioManager audioManager;
   InputState inputManager;
   TimeInfo timeInfo;
+  TextRender textRenderer;
 
   bool isInitialized;
   bool shouldQuit;

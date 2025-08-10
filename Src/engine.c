@@ -1,5 +1,6 @@
 #include "../HeaderFiles/engine.h"
 #include <SDL2/SDL_render.h>
+#include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_video.h>
 #include <stdio.h>
 
@@ -26,6 +27,9 @@ void Engine_Shutdown(EngineCore *engineCore){
    if(engineCore->sceneManager->numberOfScenes != 0){
     SceneManager_UnloadAll(engineCore->sceneManager);
   } 
+   if(engineCore->engineState.ttf_initialized){
+    TTF_Quit();
+  }
    if(engineCore->engineState.img_initialized){
     IMG_Quit();
    }
@@ -71,6 +75,13 @@ InitResult Engine_Initialize(EngineConfig *engineConfig, EngineCore *engineCore)
   engineCore->engineState.sdl_initialized = (InitGameContext(&engineCore->gameContext));
   engineCore->engineState.img_initialized = Init_Img(); 
   engineCore->engineState.mix_initialized = Audio_Init(&engineCore->audioManager);
+
+  if(!TextRender_Initialize(&engineCore->textRenderer, engineCore->gameContext.renderer)){
+    return INIT_TTF_FAILED;
+  }else{
+    engineCore->engineState.ttf_initialized = true;
+  }
+
   Time_Initialize(&engineCore->timeInfo);
   if(!Engine_VerifyEngineCore(engineCore)){
     printf("Failed to initialize tools\n");

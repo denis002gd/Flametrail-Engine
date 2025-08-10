@@ -5,7 +5,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -g `sdl2-config --cflags` -ISweatEngine/HeaderFiles
 
 # SDL2 Libraries
-LDFLAGS = `sdl2-config --libs` -lSDL2_mixer -lSDL2_image
+LDFLAGS = `sdl2-config --libs` -lSDL2_mixer -lSDL2_image -lSDL2_ttf
 
 # Source files (note the ../ to go up one directory)
 SRCS = ../Src/main.c ../Src/render.c ../Src/timer.c ../Src/game.c ../Src/input.c ../Src/audio.c ../Src/maths.c ../Src/physics.c ../Src/UI.c ../Src/collision.c ../Src/engine.c ../Src/-lm
