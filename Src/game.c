@@ -105,10 +105,12 @@ GameObject *GameObj_Create(const char *name){
   strncpy(gameObj->name, name, MAX_CHARACTERS_NAME - 1);
   gameObj->name[MAX_CHARACTERS_NAME - 1] = '\0';
   
+gameObj->isActive = true;
   gameObj->transform = Component_Create(COMPONENT_TRANSFORM);
   gameObj->transform->owner = gameObj;
   gameObj->components[0] = gameObj->transform;
   gameObj->numComponents = 1;
+  
   return gameObj;
 }
 //Returns a component from a game object
@@ -255,16 +257,13 @@ bool SceneManager_LoadScene(SceneManager *sceneMan, const char *name){
     printf("Scene with name \"%s\" not found\n", name);
     return false;
   }
-  //unload current scene
+  
+  //unload current scene 
   if(sceneMan->activeScene && sceneMan->activeScene->isActive){
     if(sceneMan->activeScene->OnSceneUnload){
       sceneMan->activeScene->OnSceneUnload(sceneMan->activeScene);
     }
-
-    for(int i = 0; i < sceneMan->activeScene->gameObjectsCount; i++){
-      GameObj_Destroy(sceneMan->activeScene->objects[i]);
-    }
-    sceneMan->activeScene->gameObjectsCount = 0;
+    // dont destroy objects, just mark scene as inactive
     sceneMan->activeScene->isActive = false;
   }
 
@@ -275,7 +274,7 @@ bool SceneManager_LoadScene(SceneManager *sceneMan, const char *name){
   if(newScene->OnSceneLoad){
     newScene->OnSceneLoad(newScene);
   }
-  //Calling start for initializing all objects
+  
   for(int i = 0; i < newScene->gameObjectsCount; i++){
     GameObj_Start(newScene->objects[i]);
     printf("Object \"%s\" was loaded in the scene\n", newScene->objects[i]->name);

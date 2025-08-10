@@ -7,14 +7,14 @@ bool InitGameContext(GameContext *Game_Context){
 
   if(!Game_Context->window){
     fprintf(stderr, "You need to create a window before using InitGameContext(), Error: %s\n", SDL_GetError());
-    return 1;
+    return false;
   }
 
   if(!Game_Context->renderer){
     fprintf(stderr, "Failed at initializing renderer, Error: %s\n", SDL_GetError());
-    return 1;
+    return false;
   }
-  return 0;
+  return true;
 }
 
 void FreeGameContext(GameContext *Game_Context){
@@ -50,6 +50,10 @@ InitResult Engine_Initialize(EngineConfig *engineConfig, EngineCore *engineCore)
     Engine_Shutdown(engineCore);
     return INIT_FAILED;
   }
+  if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
+   printf("Failed to initialize SDL: %s\n", SDL_GetError());
+   return INIT_SDL_FAILED;
+  }
    engineCore->gameContext.window = SDL_CreateWindow(engineConfig->windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED
                                                     ,engineConfig->width, engineConfig->height, engineConfig->windowFlags);
   if(!engineCore->gameContext.window){
@@ -64,10 +68,10 @@ InitResult Engine_Initialize(EngineConfig *engineConfig, EngineCore *engineCore)
     return INIT_FAILED;
   }
 
-  engineCore->engineState.sdl_initialized = (InitGameContext(&engineCore->gameContext) == 0);
+  engineCore->engineState.sdl_initialized = (InitGameContext(&engineCore->gameContext));
   engineCore->engineState.img_initialized = Init_Img(); 
   engineCore->engineState.mix_initialized = Audio_Init(&engineCore->audioManager);
-
+  Time_Initialize(&engineCore->timeInfo);
   if(!Engine_VerifyEngineCore(engineCore)){
     printf("Failed to initialize tools\n");
     Engine_Shutdown(engineCore);

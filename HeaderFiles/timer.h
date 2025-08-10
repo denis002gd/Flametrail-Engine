@@ -1,16 +1,23 @@
 #ifndef TIMER_H
 #define TIMER_H
+#include <SDL2/SDL_stdinc.h>
 #include <stdbool.h>
 #include "render.h"
 
 typedef struct{
   double deltaTime;
-  Uint64 earlyFrame;
-  Uint64 lateFrame;
+  Uint32 earlyFrame;
+  Uint32 lateFrame;
   Uint64 elapsedTime;
-
+  int frameCount;
+  float fps;
   //time since beginning of game
   float time;
+
+  Uint32 fpsUpdateTimer;
+  int fpsFrameCount;
+
+  Uint64 performanceCounter;
 }TimeInfo;
 
 typedef struct{
@@ -19,6 +26,8 @@ typedef struct{
   bool isActive;
 }Timer;
 
+void Time_Initialize(TimeInfo *time);
+void Time_Update(TimeInfo *time);
 void Time_CalculateDeltaTime(TimeInfo *time);
 void Time_CalculateGlobalTime(TimeInfo *time);
 //returns true after timeGoal is reached (must use delta time)

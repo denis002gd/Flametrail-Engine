@@ -24,7 +24,7 @@ typedef struct{
 void RenderScene(SDL_Renderer *renderer, SceneManager *sceneManager);
 
 bool Init_Img();
-int Renderer_SetTexture(GameObject *gameObject, const char* path, int layer, int active,
+int Renderer_SetTexture(GameObject *gameObject, SDL_Texture *texture, int layer, int active,
                 double angle, SDL_RendererFlip flip,  SDL_Renderer *renderer);
 void Renderer_UpdateTexture(GameObject *gameObject);
 void Renderer_DestroyTextures(GameObject *gameObject);
