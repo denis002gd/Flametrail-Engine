@@ -119,4 +119,4 @@ bool Math_InCircle2DCheck(float resultedValue){
     return true;
   }
   return false;
-} 
+}

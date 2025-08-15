@@ -42,8 +42,18 @@ Component *Component_Create(ComponentType type){
       comp->data.renderer.texture.layer = 1;
     break;
     case COMPONENT_RIGIDBODY:
-      comp->data.rigidbody.mass = 1.0f;
-      comp->data.rigidbody.useGravity = true;
+    comp->data.rigidbody.rigidBody.acceleration.x = 0.0f;
+    comp->data.rigidbody.rigidBody.acceleration.y = 0.0f;
+    comp->data.rigidbody.rigidBody.velocity.x = 0.0f;
+    comp->data.rigidbody.rigidBody.velocity.y = 0.0f;
+    comp->data.rigidbody.rigidBody.mass = 1.0f;
+    comp->data.rigidbody.rigidBody.useGravity = true;
+    comp->data.rigidbody.rigidBody.drag = 0.0f;
+    comp->data.rigidbody.rigidBody.isKinematic = false;
+    comp->data.rigidbody.rigidBody.freezeX = false;
+    comp->data.rigidbody.rigidBody.freezeY = false;
+    comp->data.rigidbody.rigidBody.useCollisions = false;
+    comp->Update = RigidbodyComponent_Update; 
     break;
     case COMPONENT_AUDIO_SOURCE:
       //DEFAULT VALUES | volume = 1.0f, loop = false, playOnAwake = false
@@ -325,3 +335,113 @@ void SceneManager_UnloadAll(SceneManager *sceneMan){
   }
 }
 
+void RigidbodyComponent_Update(Component *comp, double deltaTime) {
+    if (!comp || comp->type != COMPONENT_RIGIDBODY) return;
+    
+    RigidBody *rb = &comp->data.rigidbody.rigidBody;
+    
+    // Skip physics if object is kinematic
+    if (rb->isKinematic) return;
+    
+    // Apply gravity
+    if (rb->useGravity) {
+        Physics_ApplyGravity(rb, deltaTime);
+    }
+    
+    // Apply drag
+    if (rb->drag > 0.0f) {
+        Physics_ApplyDrag(rb, rb->drag, deltaTime);
+    }
+    
+    // Get transform component to update position
+    Component *transform = GameObj_GetComponent(comp->owner, COMPONENT_TRANSFORM);
+    if (transform) {
+        // Create Vector2 for current position
+        Vector2 position = {
+            transform->data.transform.x,
+            transform->data.transform.y
+        };
+        
+        // Integrate velocity into position
+        Physics_IntegrateVelocity(rb, &position, deltaTime);
+        
+        // Update transform with new position
+        transform->data.transform.x = position.x;
+        transform->data.transform.y = position.y;
+    }
+}
+
+// Helper functions for adding forces to game objects
+void GameObj_AddForce(GameObject *gameObj, Vector2 force) {
+    if (!gameObj) return;
+    
+    Component *rigidbodyComp = GameObj_GetComponent(gameObj, COMPONENT_RIGIDBODY);
+    if (!rigidbodyComp) return;
+    
+    Physics_AddForce(&rigidbodyComp->data.rigidbody.rigidBody, force);
+}
+
+void GameObj_AddForceXY(GameObject *gameObj, float forceX, float forceY) {
+    Vector2 force = {forceX, forceY};
+    GameObj_AddForce(gameObj, force);
+}
+
+void GameObj_SetVelocity(GameObject *gameObj, Vector2 velocity) {
+    if (!gameObj) return;
+    
+    Component *rigidbodyComp = GameObj_GetComponent(gameObj, COMPONENT_RIGIDBODY);
+    if (!rigidbodyComp) return;
+    
+    Physics_SetVelocity(&rigidbodyComp->data.rigidbody.rigidBody, velocity);
+}
+
+void GameObj_SetVelocityXY(GameObject *gameObj, float velocityX, float velocityY) {
+    Vector2 velocity = {velocityX, velocityY};
+    GameObj_SetVelocity(gameObj, velocity);
+}
+
+Vector2 GameObj_GetVelocity(GameObject *gameObj) {
+    Vector2 zero = {0.0f, 0.0f};
+    if (!gameObj) return zero;
+    
+    Component *rigidbodyComp = GameObj_GetComponent(gameObj, COMPONENT_RIGIDBODY);
+    if (!rigidbodyComp) return zero;
+    
+    return rigidbodyComp->data.rigidbody.rigidBody.velocity;
+}
+
+Vector2 GameObj_GetPosition(GameObject *gameObj) {
+    Vector2 zero = {0.0f, 0.0f};
+    if (!gameObj || !gameObj->transform) return zero;
+    
+    Vector2 position = {
+        gameObj->transform->data.transform.x,
+        gameObj->transform->data.transform.y
+    };
+    return position;
+}
+
+void GameObj_SetPosition(GameObject *gameObj, Vector2 position) {
+    if (!gameObj || !gameObj->transform) return;
+    
+    gameObj->transform->data.transform.x = position.x;
+    gameObj->transform->data.transform.y = position.y;
+}
+
+// Convenience function for impulse (instant velocity change)
+void GameObj_AddImpulse(GameObject *gameObj, Vector2 impulse) {
+    if (!gameObj) return;
+    
+    Component *rigidbodyComp = GameObj_GetComponent(gameObj, COMPONENT_RIGIDBODY);
+    if (!rigidbodyComp) return;
+    
+    RigidBody *rb = &rigidbodyComp->data.rigidbody.rigidBody;
+    
+    // Impulse = change in momentum = mass * change in velocity
+    Vector2 deltaVelocity = Vec2_Scale(impulse, 1.0f / rb->mass);
+    rb->velocity = Vec2_Add(rb->velocity, deltaVelocity);
+}
+
+// Modify your Component_Create function to add the Update function:
+// In the COMPONENT_RIGIDBODY case, add:
+// comp->Update = RigidbodyComponent_Update;

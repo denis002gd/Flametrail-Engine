@@ -7,7 +7,9 @@
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 #include "audio.h"
+#include "collision.h"
 #include "SDL2/SDL_image.h"
+#include "physics.h"
 #include "render.h"
 
 #define MAX_AUDIOSOURCE_NAME 32
@@ -60,14 +62,13 @@ typedef struct Component{
     }renderer;
 
     struct{
-      float X_velocity, Y_velocity;
-      float mass;
-      bool useGravity;
+      RigidBody rigidBody; 
     }rigidbody;
 
     struct{
-      
-      //TODO: add collision options from math.c
+      Box_Collider box_collider;
+      Circle_Collider circle_collider;
+      Mesh_Collider mesh_collider;
     }collider;
 
     struct{
@@ -145,4 +146,17 @@ bool SceneManager_LoadScene(SceneManager *sceneMan, const char *name);
 bool Scene_AddGameObject(SceneManager *sceneMan, GameObject *gameObj);
 void SceneManager_Update(SceneManager *sceneMan, float deltaTime);
 GameObject *GameObj_Find(SceneManager *sceneMan, const char *name);
+
+//physics functions integration
+
+void RigidbodyComponent_Update(Component *comp, double deltaTime);
+
+void GameObj_AddForce(GameObject *gameObj, Vector2 force);
+void GameObj_AddForceXY(GameObject *gameObj, float forceX, float forceY);
+void GameObj_SetVelocity(GameObject *gameObj, Vector2 velocity);
+void GameObj_SetVelocityXY(GameObject *gameObj, float velocityX, float velocityY);
+Vector2 GameObj_GetVelocity(GameObject *gameObj);
+Vector2 GameObj_GetPosition(GameObject *gameObj);
+void GameObj_SetPosition(GameObject *gameObj, Vector2 position);
+void GameObj_AddImpulse(GameObject *gameObj, Vector2 impulse);
 #endif // !GAME_H

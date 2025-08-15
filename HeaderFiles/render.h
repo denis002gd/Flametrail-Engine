@@ -1,5 +1,6 @@
 #ifndef RENDER_H
 #define RENDER_H
+#include "maths.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_rect.h>
@@ -57,5 +58,5 @@ void TextRender_RenderTextColored(TextRender *textRenderer, FontData *font, SDL_
 void TextRender_GetTextSize(FontData *font, int *width, int *height, const char *format, ...);
 void TextRender_DestroyFont(FontData *font);
 void TextRender_Cleanup(TextRender *textRender);
-
+void LineRender_RenderArrow(SDL_Renderer *renderer, Vector2 origin, Vector2 target, SDL_Color arrowColor);
 #endif // !RENDER_H

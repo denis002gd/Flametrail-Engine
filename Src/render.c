@@ -276,3 +276,8 @@ void TextRenderer_Cleanup(TextRender *textRenderer) {
     
     memset(textRenderer, 0, sizeof(TextRender));
 }
+void LineRender_RenderArrow(SDL_Renderer *renderer, Vector2 origin, Vector2 target, SDL_Color arrowColor){
+    SDL_SetRenderDrawColor(renderer, arrowColor.r, arrowColor.g, arrowColor.b, arrowColor.a);
+    SDL_RenderDrawLineF(renderer, origin.x, origin.y, target.x, target.y);
+
+}
