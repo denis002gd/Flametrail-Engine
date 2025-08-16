@@ -4,7 +4,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_rect.h>
-#include <SDL2/SDL_render.h>
 #include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_image.h>
@@ -16,7 +15,7 @@
 
 typedef struct SceneManager SceneManager;
 typedef struct GameObject GameObject;
-
+typedef struct Camera Camera;
 typedef struct{
   int active;
   int layer;
@@ -41,7 +40,7 @@ typedef struct{
   bool isInitialized;
 }TextRender;
 
-void RenderScene(SDL_Renderer *renderer, SceneManager *sceneManager);
+void RenderScene(SDL_Renderer *renderer, SceneManager *sceneManager, Camera *camera);
 
 bool Init_Img();
 int Renderer_SetTexture(GameObject *gameObject, SDL_Texture *texture, int layer, int active,
@@ -58,5 +57,5 @@ void TextRender_RenderTextColored(TextRender *textRenderer, FontData *font, SDL_
 void TextRender_GetTextSize(FontData *font, int *width, int *height, const char *format, ...);
 void TextRender_DestroyFont(FontData *font);
 void TextRender_Cleanup(TextRender *textRender);
-void LineRender_RenderArrow(SDL_Renderer *renderer, Vector2 origin, Vector2 target, SDL_Color arrowColor);
+void LineRender_RenderArrow(SDL_Renderer *renderer, Vector2 origin, Vector2 target, SDL_Color arrowColor, Camera *camera);
 #endif // !RENDER_H

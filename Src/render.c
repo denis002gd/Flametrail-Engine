@@ -1,4 +1,5 @@
 #include "../HeaderFiles/render.h"
+#include "../HeaderFiles/camera.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_error.h>
 #include "../HeaderFiles/game.h"
@@ -100,9 +101,8 @@ static int CompareRenderLayers(const void *a, const void *b) {
     return renderA->data.renderer.texture.layer - renderB->data.renderer.texture.layer;
 }
 
-void RenderScene(SDL_Renderer *renderer, SceneManager *sceneManager){
-    if(!renderer || !sceneManager) return;
-    
+void RenderScene(SDL_Renderer *renderer, SceneManager *sceneManager, Camera *camera){
+    if(!renderer || !sceneManager || !camera) return;
     
     Scene *currentScene = sceneManager->activeScene;
     if(!currentScene || !currentScene->isActive) {
@@ -121,28 +121,69 @@ void RenderScene(SDL_Renderer *renderer, SceneManager *sceneManager){
            renderComp->data.renderer.texture.active &&
            renderComp->data.renderer.texture.texture) {
             
-            Renderer_UpdateTexture(obj);
             renderableObjects[renderableCount++] = obj;
         }
     }
     
+    // sort by render layers
     qsort(renderableObjects, renderableCount, sizeof(GameObject*), CompareRenderLayers);
     
+    // render each object with camera transformations
     for(int i = 0; i < renderableCount; i++){
-        Component *renderComp = GameObj_GetComponent(renderableObjects[i], COMPONENT_RENDERER);
-        if(renderComp) {
-            SDL_RenderCopyEx(
-                renderer, 
-                renderComp->data.renderer.texture.texture, 
-                NULL, 
-                renderComp->data.renderer.texture.textureRect,
-                renderComp->data.renderer.texture.angle,  
-                renderComp->data.renderer.texture.center, 
-                renderComp->data.renderer.texture.flip
-            );
+        GameObject *obj = renderableObjects[i];
+        Component *renderComp = GameObj_GetComponent(obj, COMPONENT_RENDERER);
+        Component *transformComp = GameObj_GetComponent(obj, COMPONENT_TRANSFORM);
+        
+        if(!renderComp || !transformComp) continue;
+        
+        Vector2 worldPos = {
+            transformComp->data.transform.x,
+            transformComp->data.transform.y
+        };
+        
+        SDL_FRect worldRect = {
+            worldPos.x - (transformComp->data.transform.scaleX / 2),
+            worldPos.y - (transformComp->data.transform.scaleY / 2),
+            transformComp->data.transform.scaleX,
+            transformComp->data.transform.scaleY
+        };
+        
+        if (!Camera_IsPointVisible(camera, worldPos)) {
+            Vector2 corners[4] = {
+                {worldRect.x, worldRect.y},                           // top-left
+                {worldRect.x + worldRect.w, worldRect.y},             // top-right
+                {worldRect.x, worldRect.y + worldRect.h},             // bottom-left
+                {worldRect.x + worldRect.w, worldRect.y + worldRect.h} // bottom-right
+            };
+            
+            bool anyVisible = false;
+            for(int c = 0; c < 4; c++) {
+                if(Camera_IsPointVisible(camera, corners[c])) {
+                    anyVisible = true;
+                    break;
+                }
+            }
+            
+            if(!anyVisible) continue;
         }
+        
+        SDL_Rect screenRect = Camera_WorldRectToScreen(camera, worldRect);
+        
+        SDL_Point rotationCenter = {
+            (int)(screenRect.w / 2),
+            (int)(screenRect.h / 2)
+        };
+        
+        SDL_RenderCopyEx(
+            renderer, 
+            renderComp->data.renderer.texture.texture, 
+            NULL,  
+            &screenRect,
+            transformComp->data.transform.rotation,
+            &rotationCenter,
+            renderComp->data.renderer.texture.flip
+        );
     }
-    
 }
 bool TextRender_Initialize(TextRender *textRenderer, SDL_Renderer *renderer){
     if(!textRenderer || !renderer) return false;
@@ -276,8 +317,45 @@ void TextRenderer_Cleanup(TextRender *textRenderer) {
     
     memset(textRenderer, 0, sizeof(TextRender));
 }
-void LineRender_RenderArrow(SDL_Renderer *renderer, Vector2 origin, Vector2 target, SDL_Color arrowColor){
+void LineRender_RenderArrow(SDL_Renderer *renderer, Vector2 origin, Vector2 target, SDL_Color arrowColor, Camera *camera){
+    if(!renderer || !camera) return;
+    
+    // Convert world coordinates to screen coordinates
+    Vector2 screenOrigin = Camera_WorldToScreen(camera, origin);
+    Vector2 screenTarget = Camera_WorldToScreen(camera, target);
+    
     SDL_SetRenderDrawColor(renderer, arrowColor.r, arrowColor.g, arrowColor.b, arrowColor.a);
-    SDL_RenderDrawLineF(renderer, origin.x, origin.y, target.x, target.y);
-
+    SDL_RenderDrawLineF(renderer, screenOrigin.x, screenOrigin.y, screenTarget.x, screenTarget.y);
+    
+    // Calculate arrow head
+    Vector2 direction = Vec2_Sub(target, origin);
+    float length = sqrtf(direction.x * direction.x + direction.y * direction.y);
+    
+    if(length > 0) {
+        // Normalize direction
+        direction.x /= length;
+        direction.y /= length;
+        
+        // Arrow head size scaled by camera zoom
+        float arrowHeadSize = 10.0f * camera->zoom;
+        
+        // Arrow head points
+        Vector2 arrowHead1 = {
+            target.x - direction.x * arrowHeadSize + direction.y * arrowHeadSize * 0.5f,
+            target.y - direction.y * arrowHeadSize - direction.x * arrowHeadSize * 0.5f
+        };
+        
+        Vector2 arrowHead2 = {
+            target.x - direction.x * arrowHeadSize - direction.y * arrowHeadSize * 0.5f,
+            target.y - direction.y * arrowHeadSize + direction.x * arrowHeadSize * 0.5f
+        };
+        
+        // Convert arrow head points to screen coordinates
+        Vector2 screenArrowHead1 = Camera_WorldToScreen(camera, arrowHead1);
+        Vector2 screenArrowHead2 = Camera_WorldToScreen(camera, arrowHead2);
+        
+        // Draw arrow head lines
+        SDL_RenderDrawLineF(renderer, screenTarget.x, screenTarget.y, screenArrowHead1.x, screenArrowHead1.y);
+        SDL_RenderDrawLineF(renderer, screenTarget.x, screenTarget.y, screenArrowHead2.x, screenArrowHead2.y);
+    }
 }

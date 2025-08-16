@@ -29,10 +29,22 @@ int main() {
     };
     
    srand(time(NULL)); 
-EngineCore engineCore = {0};
+    EngineCore engineCore = {0};
+    
     if (Engine_Initialize(&engineConfig, &engineCore) == INIT_FAILED) {
         return 1;
     }
+    
+    engineCore.camera = Camera_Create(engineConfig.width, engineConfig.height);
+    if (!engineCore.camera) {
+        Engine_Shutdown(&engineCore);
+        return 1;
+    }
+    
+    Camera_SetPosition(engineCore.camera, (Vector2){450, 350});
+    Camera_Zoom(engineCore.camera, 1.0f);
+    
+    Camera_SetBounds(engineCore.camera, (SDL_Rect){0, 0, 1800, 1400});
     
     engineCore.sceneManager = &sceneMan;
     
@@ -75,7 +87,7 @@ EngineCore engineCore = {0};
         transform->data.transform.y = 500;
         transform->data.transform.scaleX = 100.0f;
         transform->data.transform.scaleY = 100.0f;
-        transform->data.transform.rotation = rot;
+        transform->data.transform.rotation = 45.0f;
         Renderer_SetTexture(obj, squareTexture, 1, 1, rot, SDL_FLIP_NONE, engineCore.gameContext.renderer);
         Scene_AddGameObject(&sceneMan, obj);
         GameObj_Start(obj);
@@ -107,39 +119,84 @@ while (engineCore.isRunning) {
     while (SDL_PollEvent(&engineCore.inputEvent)) {
         Input_ProcessEvent(&engineCore.inputEvent, &engineCore.inputManager);
     }
+        Camera_Update(engineCore.camera, engineCore.timeInfo.deltaTime);
+    
+    if (Input_GetKey(SDL_SCANCODE_UP, &engineCore.inputManager)) {
+        Vector2 pos = engineCore.camera->position;
+        pos.y -= 200.0f * engineCore.timeInfo.deltaTime;
+        Camera_SetPosition(engineCore.camera, pos);
+    }
+    if (Input_GetKey(SDL_SCANCODE_DOWN, &engineCore.inputManager)) {
+        Vector2 pos = engineCore.camera->position;
+        pos.y += 200.0f * engineCore.timeInfo.deltaTime;
+        Camera_SetPosition(engineCore.camera, pos);
+    }
+    if (Input_GetKey(SDL_SCANCODE_LEFT, &engineCore.inputManager)) {
+        Vector2 pos = engineCore.camera->position;
+        pos.x -= 200.0f * engineCore.timeInfo.deltaTime;
+        Camera_SetPosition(engineCore.camera, pos);
+    }
+    if (Input_GetKey(SDL_SCANCODE_RIGHT, &engineCore.inputManager)) {
+        Vector2 pos = engineCore.camera->position;
+        pos.x += 200.0f * engineCore.timeInfo.deltaTime;
+        Camera_SetPosition(engineCore.camera, pos);
+    }
+    
+    // Zoom controls
+    if (Input_GetKey(SDL_SCANCODE_Q, &engineCore.inputManager)) {
+        Camera_Zoom(engineCore.camera, engineCore.camera->zoom + 1.0f * engineCore.timeInfo.deltaTime);
+    }
+    if (Input_GetKey(SDL_SCANCODE_E, &engineCore.inputManager)) {
+        Camera_Zoom(engineCore.camera, engineCore.camera->zoom - 1.0f * engineCore.timeInfo.deltaTime);
+    }
+    
+    if (Input_GetKeyDown(SDL_SCANCODE_F, &engineCore.inputManager)) {
+        GameObject *player = GameObj_Find(&sceneMan, "player_0");
+        if (player) {
+            Camera_SetFollowTarget(engineCore.camera, player, (Vector2){0, 0});
+        }
+    }
+    
+    if (Input_GetKeyDown(SDL_SCANCODE_SPACE, &engineCore.inputManager)) {
+        Camera_StartShake(engineCore.camera, 10.0f, 0.5f, 15.0f, 5.0f);
+    }
+
     if(Input_GetKeyDown(SDL_SCANCODE_1, &engineCore.inputManager)){
-        SceneManager_LoadScene(&sceneMan, "Physics Test");
+         engineCore.camera->rotation += 5.0f;
         }
     if(Input_GetKeyDown(SDL_SCANCODE_2, &engineCore.inputManager)){
         SceneManager_LoadScene(&sceneMan, "Collision Test");
         }
 
-    if (Input_GetMouseButtonDown(0, &engineCore.inputManager)) {
-        int x, y;
-        Input_GetMousePosition(&engineCore.inputManager, &x, &y);
-        
-        char name[32];
-        snprintf(name, sizeof(name), "circle_%d", objectCounter++);
-        
-        GameObject *obj = GameObj_Create(name);
-        GameObj_AddComponent(obj, COMPONENT_RENDERER);
-        GameObj_AddComponent(obj, COMPONENT_RIGIDBODY); 
-        Component *transform = GameObj_GetComponent(obj, COMPONENT_TRANSFORM);
-        transform->data.transform.x = (float)x;
-        transform->data.transform.y = (float)y;
-        float scale = (rand() % 50);
-        transform->data.transform.scaleX = scale;
-        transform->data.transform.scaleY = scale;
-        
-        Component *rb = GameObj_GetComponent(obj, COMPONENT_RIGIDBODY);
-        Physics_ApplyGravity(&rb->data.rigidbody.rigidBody, engineCore.timeInfo.deltaTime);
-        Renderer_SetTexture(obj, circleTexture, 1, 1, 0.0f, SDL_FLIP_NONE, engineCore.gameContext.renderer);
-        Scene_AddGameObject(&sceneMan, obj);
-        GameObj_Start(obj);
-        
-        score += 10;
-        objectCount++; 
-    }
+   if (Input_GetMouseButtonDown(0, &engineCore.inputManager)) {
+    int x, y;
+    Input_GetMousePosition(&engineCore.inputManager, &x, &y);
+    
+    Vector2 worldPos = Camera_GetMouseWorldPosition(engineCore.camera, x, y);
+    
+    char name[32];
+    snprintf(name, sizeof(name), "circle_%d", objectCounter++);
+    
+    GameObject *obj = GameObj_Create(name);
+    GameObj_AddComponent(obj, COMPONENT_RENDERER);
+    GameObj_AddComponent(obj, COMPONENT_RIGIDBODY); 
+    Component *transform = GameObj_GetComponent(obj, COMPONENT_TRANSFORM);
+    
+    transform->data.transform.x = worldPos.x;
+    transform->data.transform.y = worldPos.y;
+    
+    float scale = (rand() % 50) + 20; 
+    transform->data.transform.scaleX = scale;
+    transform->data.transform.scaleY = scale;
+    
+    Component *rb = GameObj_GetComponent(obj, COMPONENT_RIGIDBODY);
+    Renderer_SetTexture(obj, circleTexture, 1, 1, 0.0f, SDL_FLIP_NONE, engineCore.gameContext.renderer);
+    Scene_AddGameObject(&sceneMan, obj);
+    GameObj_Start(obj);
+    
+    score += 10;
+    objectCount++; 
+}
 
 
 if (Input_GetKey(SDL_SCANCODE_D, &engineCore.inputManager)) {
@@ -185,7 +242,7 @@ if (sceneMan.activeScene) {
     
     SDL_RenderClear(engineCore.gameContext.renderer); 
     
-    RenderScene(engineCore.gameContext.renderer, &sceneMan);
+    RenderScene(engineCore.gameContext.renderer, &sceneMan, engineCore.camera);
         textRect.y = 10;
 float arrowScale = 0.13f;
 Vector2 centerPos = {transform->data.transform.x, 
@@ -193,13 +250,13 @@ Vector2 centerPos = {transform->data.transform.x,
 if (fabs(forceVector.x) > 1.0f) {
     Vector2 xStart = centerPos;
     Vector2 xEnd = {centerPos.x + (forceVector.x * arrowScale), centerPos.y};
-    LineRender_RenderArrow(engineCore.gameContext.renderer, xStart, xEnd, (SDL_Color){255, 0, 0, 255});
+    LineRender_RenderArrow(engineCore.gameContext.renderer, xStart, xEnd, (SDL_Color){255, 0, 0, 255}, engineCore.camera);
 }
 
 if (fabs(forceVector.y) > 1.0f) {
     Vector2 yStart = centerPos;
     Vector2 yEnd = {centerPos.x, centerPos.y + (forceVector.y * arrowScale)};
-    LineRender_RenderArrow(engineCore.gameContext.renderer, yStart, yEnd, (SDL_Color){0, 255, 0, 255});
+    LineRender_RenderArrow(engineCore.gameContext.renderer, yStart, yEnd, (SDL_Color){0, 255, 0, 255}, engineCore.camera);
 }
     TextRender_RenderText(&engineCore.textRenderer, gameFont, &textRect, "Scene: %s", sceneMan.activeScene->name);
         textRect.y = 50;
@@ -221,11 +278,7 @@ if (fabs(forceVector.y) > 1.0f) {
             (int)newTransform->data.transform.scaleX, 
             (int)newTransform->data.transform.scaleY
         };
-    if(Collision_AABB(obj1, obj2)){
-            printf("Yes\n");
-        }else{
-            printf("No\n");
-        }
+   
 
     if (Input_ShouldQuit(&engineCore.inputManager)) {
         engineCore.isRunning = false;

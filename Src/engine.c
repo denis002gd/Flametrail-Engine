@@ -24,6 +24,10 @@ void FreeGameContext(GameContext *Game_Context){
 }
 void Engine_Shutdown(EngineCore *engineCore){
    FreeGameContext(&engineCore->gameContext);
+    if (engineCore->camera) {
+        Camera_Destroy(engineCore->camera);
+        engineCore->camera = NULL;
+    }
    if(engineCore->sceneManager->numberOfScenes != 0){
     SceneManager_UnloadAll(engineCore->sceneManager);
   } 

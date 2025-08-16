@@ -11,6 +11,7 @@
 #include "render.h"
 #include "timer.h"
 #include "collision.h"
+#include "camera.h"
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
 
@@ -69,6 +70,7 @@ typedef struct{
   InputState inputManager;
   TimeInfo timeInfo;
   TextRender textRenderer;
+  Camera *camera;
 
   bool isInitialized;
   bool shouldQuit;
